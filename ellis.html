@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <title>Ellis Act Evictions</title>
+
+  <style>
+    html, body, #map {
+      position: relative;
+      height: 100%;
+      padding: 0;
+      margin: 0;
+    }
+    .box {
+      position: absolute;
+      top: 100px;
+      left: 100px;
+      background-color: rgba(255, 255, 255, 0.8);
+      font: bold 50px "Helvetica Neue";
+      padding: 3px 10px;
+    }
+   #counter{
+      position: absolute;
+      top: 400px;
+      left: 100px;
+      background-color: rgba(255, 255, 255, 0.8);
+      font: bold 45px "Helvetica Neue";
+      padding: 3px 10px;
+    }
+  </style>
+
+  </head>
+  <body onload="initMap()">
+
+    <div id="map"></div>
+    <div class="box" id="date">
+    </div>
+    <div class="box" id="counter">
+    </div>
+
+    <script src="js/libs/d3.v2.min.js"></script>
+    <script src="js/libs/jquery.min.js"></script>
+    <script src="js/libs/underscore-min.js"></script>
+    <script src="js/libs/backbone-min.js"></script>
+    <script src="js/libs/backbone.cartodb.js"></script>
+    <script type="text/javascript" src="js/libs/modestmaps.js"></script>
+    <script type="text/javascript" src="ellis.js"></script>
+  </body>
+</html>
