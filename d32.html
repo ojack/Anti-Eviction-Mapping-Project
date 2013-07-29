@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <title>Easy earthquakes</title>
+    <script src="http://d3js.org/d3.v2.min.js?2.9.3"></script>
+    <script src="http://libs.cartocdn.com/cartodb.js/v2/cartodb.js"></script>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.css" />
+<!--[if lte IE 8]>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.ie.css" />
+<![endif]-->
+
+<script src="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js"></script>
+    <style type="text/css">
+ 
+    #map {
+  width: 960px;
+  height: 500px;
+}
+
+path {
+  fill: #f00;
+  fill-opacity: .5;
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+path:hover {
+  fill: brown;
+   stroke: #fff;
+  fill-opacity: .7;
+}
+
+circle {
+      fill: #f00;
+      stroke-width: 1.5px;
+    }
+ 
+    </style>
+  </head>
+  <body>
+    <div id = "map"></div>
+    <script type="text/javascript">
+ 
+ var map = new L.Map("map", {
+      center: [37.7756, -122.4193],
+      zoom: 12
+    })
+    .addLayer(new L.TileLayer("http://{s}.tile.cloudmade.com/1a1b06b230af4efdbb989ea99e9841af/998/256/{z}/{x}/{y}.png"));
+
+map._initPathRoot()    
+
+  /* We simply pick up the SVG from the map object */
+  var svg = d3.select("#map").select("svg"),
+  g = svg.append("g");
+    //g = svg.append("g").attr("class", "leaflet-zoom-hide");
+
+var animationTime = 3600*4*1000*1000;
+/*d3.json("us-states.json", function(collection) {
+  var bounds = d3.geo.bounds(collection),
+      path = d3.geo.path().projection(project);
+
+  var feature = g.selectAll("path")
+      .data(collection.features)
+    .enter().append("path");*/
+
+  
+
+
+
+
+    var first_layer = 'd3_world_borders';
+ 
+   // var sql = new cartodb.SQL({ user: 'viz2', format: 'geojson', dp: 5});
+   var sql = new cartodb.SQL({ user: 'ojack', format: 'geojson'});
+ 
+    // Define our SVG element outside our SQL functions
+   /* var svg = d3.select("body")
+            .append("svg")
+            .call(d3.behavior.zoom()
+                .on("zoom", redraw))
+            .append("g");*/
+ 
+    // Our projection.
+ /* var xy = d3.geo.mercator();
+        xy.scale(1500);
+        xy.center([-800,30]);*/
+
+
+ 
+   /* svg.append("g").attr("id", "first_layer");
+ 
+    var path = d3.geo.path();
+    
+   /* sql.execute("SELECT ST_Simplify(the_geom,0.01) as the_geom FROM {{table_name}} WHERE the_geom IS NOT NULL", {table_name: first_layer})
+      .done(function(collection) {
+          svg.select("#first_layer")
+            .selectAll("path")
+              .data(collection.features)
+            .enter().append("path")
+            .attr("d", path.projection(xy));
+      })
+      .error(function(errors) {
+        // console.log('Errors! Oh no!')
+      });*/
+ 
+    var earthquakes;
+    sql.execute("SELECT the_geom, date_filed FROM {{table_name}} WHERE the_geom IS NOT NULL ORDER BY date_filed ASC", {table_name: 'sf_ellis_petitions'})
+      .done(function(collection) {
+        var bounds = d3.geo.bounds(collection),
+      path = d3.geo.path().projection(project);
+
+  var feature = g.selectAll("path")
+      .data(collection.features)
+    .enter().append("path");
+
+
+
+
+    //attr("d", path.pointRadius(function(d) {  return Date.parse(d.properties.date_filed)/100000000000;}));
+
+//min = 86166 7200000 max = 135716 7200000
+   /* feature.filter(function(d) { return Date.parse(d.properties.date_filed) > 1000007200000})
+       .style("fill", "blue")
+
+          .transition()
+          .duration(2000)
+          .ease(Math.sqrt)
+           .attr("d", path.pointRadius(20))
+          .remove();
+    /*  .attr("d", path.pointRadius(function(d) {  return 20;}))
+         // .attr("r", function(d) { return 5*10; })
+          .style("fill", "blue")
+          .style("fill-opacity", 0.5)
+          .style("stroke", "red")
+          .style("stroke-opacity", 0.5);*/
+
+  map.on("viewreset", reset);
+  reset();
+  var counterTime = 861667200000;
+  var timer = setInterval(function() {
+     // feature.filter(function(d) { return Date.parse(d.properties.date_filed) < counterTime})
+     feature.attr("d",path) .style("fill-opacity", function(d){ 
+      return (Date.parse(d.properties.date_filed) - counterTime)/animationTime;})
+        
+       .attr("d", path.pointRadius(function(d) {  
+
+        var dt = counterTime - Date.parse(d.properties.date_filed);
+      
+      if(dt > 0) {
+        if (dt < animationTime) {
+          var tt = dt/animationTime;
+          var r = 1 + 20* Math.sqrt(tt);
+          return r;
+        }
+        return 2;
+      }
+     // return 3;
+     return 0;
+        
+      }));
+       // f.time += 300000; 
+        //f.time += 1000000*20*5; */
+
+       counterTime += 500000000; 
+       
+      },20);
+  // Reposition the SVG to cover the features.
+  function reset() {
+    var bottomLeft = project(bounds[0]),
+        topRight = project(bounds[1]);
+
+    svg .attr("width", topRight[0] - bottomLeft[0])
+        .attr("height", bottomLeft[1] - topRight[1])
+        .style("margin-left", bottomLeft[0] + "px")
+        .style("margin-top", topRight[1] + "px");
+
+    g.attr("transform", "translate(" + -bottomLeft[0] + "," + -topRight[1] + ")");
+   /*   */
+
+  // feature.attr("d", path.pointRadius(function(d) {  return 2;}));
+         // .attr("r", function(d) { return 5*10; })
+         /* .style("fill", "blue")
+          .style("fill-opacity", 0.5)
+          .style("stroke", "red")
+          .style("stroke-opacity", 0.5);*/
+    feature.attr("d", path);
+}
+  // Use Leaflet to implement a D3 geographic projection.
+  function project(x) {
+    var point = map.latLngToLayerPoint(new L.LatLng(x[1], x[0]));
+    return [point.x, point.y];
+  }
+
+});
+ 
+    var i = 0;
+    function quake() {
+      var c = earthquakes[i];
+      svg.append("circle")
+          .attr("cx", xy(c.geometry.coordinates)[0])
+          .attr("cy", xy(c.geometry.coordinates)[1])
+          .attr("r", 1)
+          .style("fill", "red")
+          .style("fill-opacity", 0.5)
+          .style("stroke", "red")
+          .style("stroke-opacity", 0.5)
+        .transition()
+          .duration(2000)
+          .ease(Math.sqrt)
+          .attr("r", "20")
+          .style("fill-opacity", 1e-6)
+          .style("stroke-opacity", 1e-6)
+          .remove()
+        setTimeout(quake, 200);
+      i++;
+      if (earthquakes.length==i) i = 0;
+    }
+ 
+
+    </script>
+  </body>
+</html>

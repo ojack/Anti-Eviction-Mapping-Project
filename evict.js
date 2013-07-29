@@ -61,7 +61,7 @@ var EarthQuakes = CartoDB.CartoDBCollection.extend({
     this.each(function(m) {
 
     //  m.time = new Date(m.get('timestamp'));
-    m.time = m.get('timestamp');
+   // m.time = m.get('timestamp');
      //alert(m.get('timestamp') + m.time) ;
     });
 

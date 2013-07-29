@@ -1,5 +1,13 @@
 
 //var CartoDB = Backbone.CartoDB({ user: 'viz2' });
+
+ $(function() {
+    $( "#slider" ).slider({ max: 2013, min:2000, change: function( event, ui ) {
+       // alert("moved " + $( "#slider" ).slider( "value" ));
+       // updateMap( $( "#slider" ).slider( "value" ));
+      }
+     });
+  });
 var CartoDB = Backbone.CartoDB({ user: 'ojack' });
 var totalEvictions = 0;
 
@@ -21,7 +29,23 @@ var EarthQuake = CartoDB.CartoDBModel.extend({
         if (dt < this.ANIMATION_TIME){
           return true;
         }
-         return true;
+       //  return true;
+
+      }
+      return false;
+      //return dt > 0 && dt < this.ANIMATION_TIME;
+      //return dt > 0;
+  },
+
+  getRadius: function(t) {
+      var dt = t - this.time.getTime();
+      if(dt > 0) {
+        totalEvictions++;
+        if (dt < this.ANIMATION_TIME){
+          return true;
+        }
+       //  return true;
+
       }
       return false;
       //return dt > 0 && dt < this.ANIMATION_TIME;
@@ -36,8 +60,8 @@ var EarthQuake = CartoDB.CartoDBModel.extend({
           var r = 1 + 20* Math.sqrt(tt);
           return r;
       }
-      return 3;
-    //  return 0;
+     // return 3;
+     return 0;
      //return 1;
   },
 
@@ -49,8 +73,8 @@ var EarthQuake = CartoDB.CartoDBModel.extend({
           //return Math.max(0, a*a)*0.3;
           return Math.max(0, a*a)*0.8;
       }
-      return 1;
-      ///return 0.0;
+      //return 1;
+      return 0.0;
      // alert("haiii");
       //return 1.0;
   }
@@ -141,7 +165,7 @@ function Overlay(map, earthquakes) {
 
 Overlay.prototype = {
   renderStatic: function(map) {
-      alert("rendering");
+      //alert("rendering");
         var node = this.svg.selectAll("g")
           .data(this.earthquakes.getAll(), function(d) { return d.id; })
         /*   .attr('transform', function(val) {
@@ -203,39 +227,83 @@ Overlay.prototype = {
 
 function initMap() {
     var map;
-
-
+    var mm = com.modestmaps;
     // create map
     var src = document.getElementById('src');
-    template = 'https://maps.nlp.nokia.com/maptiler/v2/maptile/newest/normal.day/{Z}/{X}/{Y}/256/png8?lg=eng&token=61YWYROufLu_f8ylE0vn0Q&app_id=qIWDkliFCtLntLma2e6O';
-    var subdomains = [ '', 'a.', 'b.', 'c.' ];
-    var provider = new MM.TemplatedLayer(template, subdomains);
+   // template = 'https://maps.nlp.nokia.com/maptiler/v2/maptile/newest/normal.day/{Z}/{X}/{Y}/256/png8?lg=eng&token=61YWYROufLu_f8ylE0vn0Q&app_id=qIWDkliFCtLntLma2e6O';
+    
+ //template = 'http://{S}tiles.mapbox.com/v3/cartodb.map-byl8dnag/{Z}/{X}/{Y}.png';
+ var template = 'http://c.tiles.mapbox.com/v3/examples.map-szwdot65/{Z}/{X}/{Y}.png';
+   // var subdomains = [ '', 'a.', 'b.', 'c.' ];
+    //var provider = new MM.StamenTileLayer("toner");
+    var provider = new MM.TemplatedLayer(template);
+//var provider = new MM.TemplatedLayer(template, subdomains);
 
     map = new MM.Map(document.getElementById('map'), provider);
     var timer;
+    var counterTime;
     var earthquakes = new EarthQuakes();
     var setup_layer = function() {
       var f = new Overlay(map, earthquakes);
-      timer = setInterval(function() {
-       // f.time += 300000; 
-        //f.time += 1000000*20*5; 
-        f.time += 500000000; 
+         var currDate = new Date(f.time).getUTCFullYear();
+         alert(f.time);
+        $( "#slider" ).slider({ max: 1357167200000, min:f.time, start: function( event, ui ) {
+         // updateMap($( "#slider" ).slider( "value" ));
+         clearInterval(timer);
+       // alert("moved " + $( "#slider" ).slider( "value" ));
+       // updateMap( $( "#slider" ).slider( "value" ));
+      }, change: function( event, ui ) {
+        f.time = $( "#slider" ).slider( "value" );
         f.draw(map);
-        var currDate = new Date(f.time).getUTCFullYear();
+        currDate = new Date(f.time).getUTCFullYear();
         document.getElementById('date').innerHTML = currDate;
          document.getElementById('counter').innerHTML = "Total Ellis Act evictions: " +totalEvictions;
          totalEvictions = 0;
+        // 
+         // updateMap($( "#slider" ).slider( "value" ));
+      
+      }, slide: function( event, ui ) {
+        f.time = $( "#slider" ).slider( "value" );
+        f.draw(map);
+        currDate = new Date(f.time).getUTCFullYear();
+        document.getElementById('date').innerHTML = currDate;
+         document.getElementById('counter').innerHTML = "Total Ellis Act evictions: " +totalEvictions;
+         totalEvictions = 0;
+      }, stop: function( event, ui ) {
+        playAnimation();
+      }
+     });
+      playAnimation();
+
+      function playAnimation(){
+        counterTime = $( "#slider" ).slider( "value" );
+        timer = setInterval(function() {
+       // f.time += 300000; 
+        //f.time += 1000000*20*5; 
+
+       counterTime += 500000000; 
+        $( "#slider" ).slider( "value", counterTime);
          if(parseFloat(currDate) > 2012){
           //alert("too much time" + currDate);
+         // alert(f.time);
           clearInterval(timer);
           f.renderStatic(map);
          }
         //.replace(/GMT.*/g,'');
       },20);
+
+      }
+
+      function updateMap(t){
+        alert("hey");
+       // clearInterval(timer);
+      }
     };
 
     // fetch all data
     earthquakes.bind('reset', setup_layer);
+    var zoomer = wax.mm.zoomer(map);
+    zoomer.appendTo(map.parent);
     earthquakes.fetch();
     if(!location.hash) {
          map.setCenterZoom(new MM.Location(37.75, -122.45), 13);
