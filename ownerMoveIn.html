@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-    <title>Ellis Act Evictions</title>
+    <title>Owner Move-In</title>
     <link rel="stylesheet" href="css/jquery-ui.min.css">
     <script src="http://d3js.org/d3.v2.min.js?2.9.3"></script>
     <script src="http://libs.cartocdn.com/cartodb.js/v2/cartodb.js"></script>
@@ -89,9 +89,9 @@ circle {
 var animationTime = 3600*4*1000*1000;
 
    var sql = new cartodb.SQL({ user: 'ojack', format: 'geojson'});
- 
+
   
-    sql.execute("SELECT the_geom, date_filed FROM {{table_name}} WHERE the_geom IS NOT NULL ORDER BY date_filed ASC", {table_name: 'sf_ellis_petitions'})
+    sql.execute("SELECT the_geom, date_filed FROM {{table_name}} WHERE the_geom IS NOT NULL ORDER BY date_filed ASC", {table_name: 'owner_move_in'})
       .done(function(collection) {
 
         collection.features.forEach(function(d) {
@@ -158,7 +158,7 @@ var animationTime = 3600*4*1000*1000;
       }) ;
         currDate = new Date(counterTime).getUTCFullYear();
         document.getElementById('date').innerHTML = currDate;
-         document.getElementById('counter').innerHTML = "Total Ellis Act evictions: " +totalEvictions;
+         document.getElementById('counter').innerHTML = "Evictions due to Owner Move In: " +totalEvictions;
          totalEvictions = 0;
     }
 
