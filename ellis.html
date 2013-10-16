@@ -1,59 +1,382 @@
 <!DOCTYPE html>
 <html>
   <head>
-  <title>Ellis Act Evictions</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+     <meta charset="utf-8">
+    <!--Edit the title of the page-->
+   
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/themes/css/cartodb.css" />
+    <!--[if lte IE 8]>
+      <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/themes/css/cartodb.ie.css" />
+    <![endif]-->
+    <!--Switch between the different themes changing the stylesheet below - light-theme.css |dark-theme.css -->
+    <link rel="stylesheet" href="css/light-theme.css">
+    <link rel="stylesheet" href="css/makeitresponsive.css">
+    <title>Ellis Act Evictions</title>
+    <link rel="stylesheet" href="css/jquery-ui.min.css">
+    <script src="http://d3js.org/d3.v2.min.js?2.9.3"></script>
+    <script src="http://libs.cartocdn.com/cartodb.js/v2/cartodb.js"></script>
+    <script src="js/jquery.ui.core.js"></script>
+    <script src="js/jquery.ui.widget.js"></script>
+    <script src="js/jquery.ui.mouse.js"></script>
+    <script src="js/jquery.ui.slider.js"></script>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.css" />
+    <script src="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js"></script>
+<!--[if lte IE 8]>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.ie.css" />
+<![endif]-->
 
-  <style>
+
+  <style type="text/css">
     html, body, #map {
       position: relative;
       height: 100%;
       padding: 0;
       margin: 0;
     }
-    .box {
+
+    .toolbar {
       position: absolute;
-     bottom: 100px;
-     right: 100px;
+      bottom: 0px;
+      right: 0px;
       background-color: rgba(255, 255, 255, 0.8);
-      font: bold 50px "Helvetica Neue";
-      padding: 3px 10px;
-      width: 400px;
+      font: 30px "Helvetica Neue";
+
+      width: 100%;
     }
-   #counter{
-      /*position: absolute;
-      top: 400px;
-      left: 100px;
-      background-color: rgba(255, 255, 255, 0.8);*/
+
+    #timeline{
+      margin-bottom: 40px;
+      width:100%;
+      float:left;
+    }
+
+    .timeline-element{
+      display:block;
+      float:left;
+     
+    }
+
+    #evictionCount{
       font: 18px "Helvetica Neue";
-      /*padding: 3px 10px;*/
+      height: 60px;
+      width: 400px;
+      display:block;
+      float:right;
+
     }
-  </style>
+  
+    .tooltip{
+      color:#fff;
+      background-color:#000;
+      opacity:0.7;
+      padding-right: 10px;
+      padding-left: 10px;
+      padding-top: 4px;
+      padding-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: +1px;
+    }
+   
+    path {
+      fill: #f00;
+      fill-opacity: .5;
+      stroke: #fff;
+      stroke-width: 1.5px;
+    }
 
+     #counter{
+      color:#000000;
+      font-family: "Helvetica Narrow","Arial Narrow",Tahoma,Arial,Helvetica;
+      letter-spacing: -1px;
+      
+    }
+
+    #play{
+    width:30px;
+    height:30px;
+    cursor:pointer;
+     vertical-align: middle;
+     background-image:url('images/pause.png');
+     
+    }
+
+    #slider{
+      width: 65%;
+      height: 14px;
+      top:8px;
+   z-index: 20;
+   margin-left:5px;
+   
+    }
+
+    circle {
+      fill: #f30;
+      stroke-width: 0.5px;
+      fill-opacity: 0.8;
+      stroke: #FFF;
+  }
+
+  .center {
+    stroke-width: 8px;
+    stroke-opacity: 0.3;
+    fill: #000;
+    stroke: #F30;
+  }
+ 
+    </style>
   </head>
-  <body onload="initMap()">
+  <body>
+    <div id = "map"></div>
 
-    <div id="map"></div>
-    <div class="box">
-      <div id="date"></div>
-      <div id="counter"></div>
-       <div id="slider"></div>
-  </div>
-  <link rel="stylesheet" href="css/jquery-ui.min.css">
-  <link rel="stylesheet" href="css/controls.css">
-  <script type="text/javascript" src="http://maps.stamen.com/js/tile.stamen.js?v1.2.3"></script>
 
-    <script src="js/libs/d3.v2.min.js"></script>
-    <script src="js/libs/jquery.min.js"></script>
-    <script src="js/libs/underscore-min.js"></script>
-    <script src="js/libs/backbone-min.js"></script>
-    <script src="js/libs/backbone.cartodb.js"></script>
-    <script src="js/jquery.ui.core.js"></script>
-  <script src="js/jquery.ui.widget.js"></script>
-  <script src="js/jquery.ui.mouse.js"></script>
-  <script src="js/jquery.ui.slider.js"></script>
-    <script type="text/javascript" src="js/libs/modestmaps.js"></script>
-    <script src="js/wax.mm.min.js"></script>
-    <script src="js/zoomer.js"></script>
-    <script type="text/javascript" src="ellis.js"></script>
+   <div class="sidepanel">
+      <div class="wrapper">
+        <p></p>
+        <h1>THE ELLIS ACT</h1>
+         
+         <h3 id="runningTotal">  <div id="counter" style="color: #ff3300; font-size:80px; opacity:0.9 " > 0</div><br>San Francisco families forced out of their homes, <br>
+        <span id="date"> </span> </h3>
+         <div id = "timeline">
+      <div id="play" class="timeline-element"></div>
+       <div id="slider" class="timeline-element"></div>
+       
+     </div>
+        <p><span style="font-weight: bold; font-size:15px">The Ellis Act</span> is a key mechanism for undermining San Francisco’s rent control laws. The state law gives landlords the right to evict all tenants, even if they have always been good tenants and paid their rent on time. The use of the Ellis act is a legal deception where owners pretend to go out of business. In actuality they aim to create new expensive housing options in the form of group-owned tenancy-in-common flats or condos. Condos are forever exempted from rent protections even if subsequently rented out.</p>
+
+        <p><span class="bold" style="font-weight: bold; font-size:15px">There is no limit to the number of times a building owner can “go out of business”. </span>The data shows some owners buying and Ellising multiple buildings over time. If these new owners do not want to be landlords, why are they buying buildings full of rental units?</p>
+        
+        <p>The security of rent increase protection applies to only 46% of total housing stock in the city. It is a precious resource that is shrinking everyday.</p>
+
+        <p>This map reveals the accumulation of Ellis Act evictions since they were first utilized by landlords in San Francisco. The size of the explosion corresponds with the number of units displaced by each eviction. A <a href="http://antievictionmappingproject.wordpress.com/timeline-of-displacement/">timeline of Ellis Act evictions can be found here.</a></p>
+        
+        <p>If you have been evicted by the Ellis Act or other means of displacement, please fill out our <a href="http://antievictionmappingproject.wordpress.com/survey/">survey here to put your story on a comprehensive map in the making.</a></p>     
+       
+
+        <div class="context footer">
+       
+          <p>Map created by <a href="http://antievictionmappingproject.wordpress.com/">Anti-Eviction Mapping Project</a></p>
+          <p>Powered by <a href="http://d3js.org/">D3</a>, <a href="http://leafletjs.com/">Leaflet</a> and <a href="http://cartodb.com/"> CartoDB</a></p>
+        </div>
+          
+        </div>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+
+    var tooltip = d3.select("body")
+    .append("div")
+    .attr("class", "tooltip")
+    .style("position", "absolute")
+    .style("z-index", "60")
+    .style("visibility", "hidden")
+    .text("a simple tooltip");
+ 
+ /*Initialize Leaflet Map*/
+ var map = new L.Map("map", {
+      center: [37.7756, -122.4193],
+      minZoom: 10,
+      zoom: 13
+    })
+    .addLayer(new L.TileLayer("http://{s}.tile.cloudmade.com/1a1b06b230af4efdbb989ea99e9841af/59870/256/{z}/{x}/{y}.png"));
+
+/* Initialize the SVG layer */
+  map._initPathRoot()    
+
+  /* Pass map SVG layer to d3 */
+  var svg = d3.select("#map").select("svg"),
+  g = svg.append("g");
+
+  /*Animation Timing Variables*/
+      var startingTime = 861667200000;
+      var step = 1500000000;
+      var maxTime = 1357167200000;
+      var inititalZoom = 13;
+      var timer;
+      var isPlaying = true;
+       var counterTime = startingTime;
+  
+  /*Load data file and initialize coordinates*/
+
+  var sql = new cartodb.SQL({ user: 'antievictionmappingproject', format: 'geojson'});
+ 
+    /*Load from CartoDB database*/
+    sql.execute("SELECT the_geom, date_filed, units, address_1 FROM {{table_name}} WHERE the_geom IS NOT NULL ORDER BY date_filed DESC", {table_name: 'ellis_with_address_count'})
+ /* var sql = new cartodb.SQL({ user: 'ojack', format: 'geojson'});
+ 
+    /*Load from CartoDB database*
+    sql.execute("SELECT the_geom, date_filed,address FROM {{table_name}} WHERE the_geom IS NOT NULL ORDER BY date_filed DESC", {table_name: 'sf_ellis_petitions'})*/
+      .done(function(collection) {
+        var cumEvictions = 3709;//total number of evictions
+        maxTime =  Date.parse(collection.features[0].properties.date_filed);
+        console.log(maxTime);
+        collection.features.forEach(function(d) {
+      d.LatLng = new L.LatLng(d.geometry.coordinates[1],d.geometry.coordinates[0]);
+      cumEvictions -= d.properties.units;
+      d.totalEvictions = cumEvictions;
+      console.log(d.properties.date_filed + " with " + d.totalEvictions);
+    });
+
+    /*Load from local file*/
+   /*  d3.json("sf_ellis_petitions.json", function(collection) {
+      collection.features.forEach(function(d) {
+      d.LatLng = new L.LatLng(d.geometry.coordinates[1],d.geometry.coordinates[0]);
+    })*/
+  
+  /*Add an svg group for each data point*/
+   var node = g.selectAll(".node").data(collection.features).enter().append("g");
+
+    var feature = node.append("circle")
+       .attr("r", function(d) { return d.properties.units;})
+      .attr("class", "center");
+
+   node.on("mouseover", function(d){
+    tooltip.text(d.properties.address_1);
+    return tooltip.style("visibility", "visible");})
+.on("mousemove", function(){return tooltip.style("top",
+    (d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");})
+.on("click", function(d){
+    tooltip.text(d.properties.address_1);
+    return tooltip.style("visibility", "visible");})
+.on("mouseout", function(){return tooltip.style("visibility", "hidden");});
+
+       $( "#play" ).click(togglePlay);
+       $( "#slider" ).slider({ max: maxTime, min:counterTime, start: function( event, ui ) {
+         clearInterval(timer);
+      }, change: function( event, ui ) {
+        counterTime = $( "#slider" ).slider( "value" );
+        updateCounter();
+         updateMap();
+      
+      }, slide: function( event, ui ) {
+        counterTime = $( "#slider" ).slider( "value" );
+        updateCounter();
+        updateMap();
+       
+      }, stop: function( event, ui ) {
+        if(isPlaying){
+        playAnimation();
+      }
+      }
+     });
+
+    var currDate = new Date(counterTime).getFullYear();
+     playAnimation();
+    map.on("viewreset", update);
+    update();
+
+    function updateCounter(){
+      var totalEvictions = getTotalEvictions();
+      //$('#counter').text = totalEvictions+" ";
+       document.getElementById('counter').innerHTML = totalEvictions + " ";
+      console.log(totalEvictions);
+    }
+    function updateMap(){
+     
+      node.attr("visibility", "hidden")
+      /*Show all dots with date before time*/
+      .filter(function(d) { return Date.parse(d.properties.date_filed) < counterTime}) 
+         .attr("visibility", "visible")
+        /*Animate most recent evictions*/
+        .filter(function(d) { 
+
+        return Date.parse(d.properties.date_filed) > counterTime-step}) 
+      .append("circle")
+          .attr("r", 4)
+           .style("fill","red")
+          .style("fill-opacity", 0.8)
+          .transition()
+
+          .duration(800)
+          .ease(Math.sqrt)
+          .attr("r", function(d) { return d.properties.units*30;})
+            .style("fill","#f40")
+          .style("fill-opacity", 1e-6)
+          .remove();
+
+           /*var mostRecent; = node.select(function(d) { return Date.parse(d.properties.date_filed) < counterTime})[0][0];
+           for(var i = 0; i < collection.features.length; i ++){
+              if()
+           }*/
+          
+     
+
+        currDate = new Date(counterTime).getFullYear();
+        var currMonth = new Date(counterTime).getMonth();
+        var currDay = new Date(counterTime).getDate();
+        if(currMonth==0){
+          currMonth = 12;
+          currDate --;
+        }
+       
+        document.getElementById('date').innerHTML = "1/1/1997 - " + currMonth+"/"+currDay + "/"+currDate;
+        
+        
+    }
+   // quake();
+   function getTotalEvictions(){
+    for(var i = 0; i < collection.features.length; i ++){
+              if(Date.parse(collection.features[i].properties.date_filed)< counterTime){
+                return collection.features[i].totalEvictions;
+              }
+           }
+      return 0;
+   }
+
+   function showNode(selection){
+     //console.log("selected " + JSON.stringify(selection));
+   }
+   
+   /*Update slider*/
+     function playAnimation(){
+        counterTime = $( "#slider" ).slider( "value" );
+        if(counterTime >=maxTime){
+          $( "#slider" ).slider( "value", startingTime);
+          
+         }
+        isPlaying = true;
+        console.log("playAnimation called");
+        timer = setInterval(function() {
+       counterTime += step; 
+        $( "#slider" ).slider( "value", counterTime);
+         if(counterTime >=maxTime){
+          stopAnimation(); 
+         }
+      },500);
+
+      }
+
+    function stopAnimation(){
+      clearInterval(timer);
+        $('#play').css('background-image', 'url(images/play.png)');
+      isPlaying = false;
+    }
+
+    /*Scale dots when map size or zoom is changed*/
+    function update() {
+      updateMap();
+      node.attr("transform", function(d) {return "translate(" +  map.latLngToLayerPoint(d.LatLng).x + "," + map.latLngToLayerPoint(d.LatLng).y + ") scale("+map.getZoom()/13+")"});
+        
+    }
+  
+
+ function togglePlay(){
+    if(isPlaying){
+      stopAnimation();
+    } else {
+      $('#play').css('background-image', 'url(images/pause.png)');
+      playAnimation();
+       }
+     }
+})
+
+
+ 
+
+    </script>
   </body>
 </html>

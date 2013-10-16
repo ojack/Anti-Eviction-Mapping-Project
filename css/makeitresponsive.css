@@ -2,9 +2,25 @@
 
 @media only screen and (max-width: 768px) {
   .map{position: inherit; height: 400px; width: 100%; display: block;}
-  .sidepanel{position: inherit; width: 100%;}
+  .sidepanel{transform: scale(0.5,0.5);
+   
+
+-ms-transform: scale(0.5,0.5); /* IE 9 */
+-webkit-transform: scale(0.5,0.5); /* Safari and Chrome */
+	height: 200%;
+   	width:66%;
+   	right:-17%;
+   	top: -50%;
+   	
+   	}
+   	h1{font-size: 32px;}
+   	h3{font-size: 17px; color: #000; text-transform: uppercase; margin-bottom: 10px; line-height: 22px; letter-spacing: +2px;}
+    
+  
 }
 
 @media only screen and (max-width: 480px) {
   .map {height: 300px;}
+  
+  
 }
